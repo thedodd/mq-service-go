@@ -1,0 +1,4 @@
+[submodule "leaf-proto"]
+	path = leaf-proto
+	url = git@gitlab.com:project-leaf/leaf-proto.git
+	branch = master

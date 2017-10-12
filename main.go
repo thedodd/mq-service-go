@@ -19,8 +19,8 @@ func main() {
 		log.Errorf("Error while ensuring broker topology: %s", err.Error())
 	}
 
-	// Book the API.
-	if err := api.New(cfg, log).Listen(); err != nil {
+	// Boot the API.
+	if err := api.New(cfg, log, broker).Listen(); err != nil {
 		fmt.Printf("Error from listener: %T: %s", err, err.Error())
 	}
 }

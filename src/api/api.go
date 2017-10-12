@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"gitlab.com/project-leaf/mq-service-go/src/broker"
 	"gitlab.com/project-leaf/mq-service-go/src/config"
 	"gitlab.com/project-leaf/mq-service-go/src/internalService"
 	"gitlab.com/project-leaf/mq-service-go/src/proto/mq"
@@ -22,12 +23,12 @@ type API struct {
 }
 
 // New will build and return a new `API` instance.
-func New(cfg *config.Config, log *logrus.Logger) *API {
+func New(cfg *config.Config, log *logrus.Logger, broker *broker.Broker) *API {
 	// Create the underlying gRPC server for this API.
 	grpcServer := grpc.NewServer()
 
 	// Register services.
-	internalMQService := internalService.New()
+	internalMQService := internalService.New(cfg, log, broker)
 	mq.RegisterInternalMQServiceServer(grpcServer, internalMQService)
 
 	return &API{cfg, log, grpcServer}

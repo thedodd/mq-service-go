@@ -10,11 +10,8 @@ package mq
 // valid `SystemEvent` types.
 type SystemEventMessage interface {
 	isSystemEvent_Event
-	Reset()
-	String() string
-	ProtoMessage()
 
-	// RoutingKey is the `SystemEventMessage`'s routing key.
+	// RoutingKey is this message's routing key.
 	RoutingKey() string
 }
 

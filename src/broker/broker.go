@@ -48,52 +48,35 @@ func New(cfg *config.Config, log *logrus.Logger) *Broker {
 // EnsureTopology will ensure the needed topology is in place in the broker.
 //
 // This routine should only be called once when the service is first started.
-func (broker *Broker) EnsureTopology() error {
+func (broker *Broker) EnsureTopology() *core.Error {
 	broker.log.Info("Ensuring broker topology.")
 	chn, _, chnErr := broker.getChannel()
 	if chnErr != nil {
-		return broker.HandleError(chnErr)
+		return broker.handleError(chnErr)
 	}
 
 	// Ensure needed exchanges.
 	if err := chn.ExchangeDeclare(ExchangeEvents, exchangeTypeTopic, true, false, false, false, nil); err != nil {
-		return broker.HandleError(err)
+		return broker.handleError(err)
 	}
 
 	// Ensure needed queues.
 	if _, err := chn.QueueDeclare(queueEventsScanImageUploaded, true, false, false, false, amqp.Table{"x-message-ttl": ttlSLA}); err != nil {
-		return broker.HandleError(err)
+		return broker.handleError(err)
 	}
 	if err := chn.QueueBind(queueEventsScanImageUploaded, queueEventsScanImageUploadedKey, ExchangeEvents, false, nil); err != nil {
-		return broker.HandleError(err)
+		return broker.handleError(err)
 	}
 
 	return nil
 }
 
-// HandleError will mutate the receiver so that the service can recover from broker errors.
-//
-// This routine will also accept an error and return it at the end. Read the TODO below.
-// TODO: update this routine to take an error instance from amqp lib and return an
-// error type specific to this service. Probably just a `core.Error`.
-func (broker *Broker) HandleError(err error) error {
-	if broker.channel != nil {
-		broker.channel.Close()
-		broker.channel = nil
-	}
-	if broker.connection != nil {
-		broker.connection.Close()
-		broker.connection = nil
-	}
-	return err
-}
-
 // PublishEvent will publish the given `SystemEventMessage` to the `events` exchange.
-func (broker *Broker) PublishEvent(message mq.SystemEventMessage, ctx *core.Context) error {
+func (broker *Broker) PublishEvent(message mq.SystemEventMessage, ctx *core.Context) *core.Error {
 	chn, _, chnErr := broker.getChannel()
 	if chnErr != nil {
 		broker.log.Errorf("Error getting channel: %T: %s", chnErr, chnErr.Error())
-		return broker.HandleError(chnErr)
+		return broker.handleError(chnErr)
 	}
 
 	// Build the event wrapper.
@@ -106,7 +89,7 @@ func (broker *Broker) PublishEvent(message mq.SystemEventMessage, ctx *core.Cont
 	data, dataErr := proto.Marshal(event)
 	if dataErr != nil {
 		broker.log.Errorf("Error marshalling protobuf message: %T: %s", dataErr, dataErr.Error())
-		return dataErr
+		return core.NewError500()
 	}
 
 	// Construct the AMQP segment to be sent over the wire.
@@ -114,7 +97,7 @@ func (broker *Broker) PublishEvent(message mq.SystemEventMessage, ctx *core.Cont
 		ContentType:  "application/protobuf",
 		DeliveryMode: amqp.Persistent,
 		Timestamp:    time.Now(),
-		Type:         "", // TODO: update this.
+		Type:         message.RoutingKey(),
 		AppId:        "mq-service",
 		Body:         data,
 	}
@@ -122,7 +105,7 @@ func (broker *Broker) PublishEvent(message mq.SystemEventMessage, ctx *core.Cont
 	// Publish the event.
 	if err := chn.Publish(ExchangeEvents, message.RoutingKey(), true, false, msg); err != nil {
 		broker.log.Errorf("Error publishing event: %T: %s", err, err.Error())
-		return broker.HandleError(err)
+		return broker.handleError(err)
 	}
 
 	return nil
@@ -183,4 +166,27 @@ func (broker *Broker) getChannel() (*amqp.Channel, *amqp.Connection, error) {
 	// Mutate receiver by updating its `channel` field, and return.
 	broker.channel = chn
 	return chn, conn, nil
+}
+
+// handleError will mutate the receiver so that the service can recover from broker errors.
+//
+// Public interface methods which use the internal connection &| channel should call
+// this method any time an error is returned from a method related to a connection &|
+// channel. This will ensure that connections can be re-eastablished and channels re-opened.
+//
+// This routine will also take the given error and construct an error from it which can be
+// more directly used in this service.
+func (broker *Broker) handleError(err error) *core.Error {
+	// Put the broker back into a pristine state so that it
+	// can handle connection &| channel issues.
+	if broker.channel != nil {
+		broker.channel.Close()
+		broker.channel = nil
+	}
+	if broker.connection != nil {
+		broker.connection.Close()
+		broker.connection = nil
+	}
+
+	return core.New500FromError(err, broker.log)
 }

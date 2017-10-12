@@ -1,19 +1,25 @@
 package broker
 
 import (
+	"time"
+
+	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 
 	"gitlab.com/project-leaf/mq-service-go/src/config"
+	"gitlab.com/project-leaf/mq-service-go/src/proto/core"
+	"gitlab.com/project-leaf/mq-service-go/src/proto/mq"
 )
 
 const (
 	exchangeTypeTopic = "topic"
 
-	exchangeEvents = "events"
+	// ExchangeEvents is the exchange where event messages are published.
+	ExchangeEvents = "events"
 
-	queueEventsImageScanUploaded    = "events.image_scan_uploaded"
-	queueEventsImageScanUploadedKey = "events.image_scan_uploaded"
+	queueEventsScanImageUploaded    = "events.scan.image.uploaded"
+	queueEventsScanImageUploadedKey = "events.scan.image.uploaded"
 )
 
 var (
@@ -27,8 +33,9 @@ var (
 
 // Broker exposes an interface for managing connections to the backend message broker.
 type Broker struct {
-	config     *config.Config
-	log        *logrus.Logger
+	config *config.Config
+	log    *logrus.Logger
+
 	connection *amqp.Connection
 	channel    *amqp.Channel
 }
@@ -49,15 +56,15 @@ func (broker *Broker) EnsureTopology() error {
 	}
 
 	// Ensure needed exchanges.
-	if err := chn.ExchangeDeclare(exchangeEvents, exchangeTypeTopic, true, false, false, false, nil); err != nil {
+	if err := chn.ExchangeDeclare(ExchangeEvents, exchangeTypeTopic, true, false, false, false, nil); err != nil {
 		return broker.HandleError(err)
 	}
 
 	// Ensure needed queues.
-	if _, err := chn.QueueDeclare(queueEventsImageScanUploaded, true, false, false, false, amqp.Table{"x-message-ttl": ttlSLA}); err != nil {
+	if _, err := chn.QueueDeclare(queueEventsScanImageUploaded, true, false, false, false, amqp.Table{"x-message-ttl": ttlSLA}); err != nil {
 		return broker.HandleError(err)
 	}
-	if err := chn.QueueBind(queueEventsImageScanUploaded, queueEventsImageScanUploadedKey, exchangeEvents, false, nil); err != nil {
+	if err := chn.QueueBind(queueEventsScanImageUploaded, queueEventsScanImageUploadedKey, ExchangeEvents, false, nil); err != nil {
 		return broker.HandleError(err)
 	}
 
@@ -79,6 +86,46 @@ func (broker *Broker) HandleError(err error) error {
 		broker.connection = nil
 	}
 	return err
+}
+
+// PublishEvent will publish the given `SystemEventMessage` to the `events` exchange.
+func (broker *Broker) PublishEvent(message mq.SystemEventMessage, ctx *core.Context) error {
+	chn, _, chnErr := broker.getChannel()
+	if chnErr != nil {
+		broker.log.Errorf("Error getting channel: %T: %s", chnErr, chnErr.Error())
+		return broker.HandleError(chnErr)
+	}
+
+	// Build the event wrapper.
+	event := &mq.SystemEvent{
+		Context: ctx,
+		Event:   message,
+	}
+
+	// Marshal the given protobuf message to bytes.
+	data, dataErr := proto.Marshal(event)
+	if dataErr != nil {
+		broker.log.Errorf("Error marshalling protobuf message: %T: %s", dataErr, dataErr.Error())
+		return dataErr
+	}
+
+	// Construct the AMQP segment to be sent over the wire.
+	msg := amqp.Publishing{
+		ContentType:  "application/protobuf",
+		DeliveryMode: amqp.Persistent,
+		Timestamp:    time.Now(),
+		Type:         "", // TODO: update this.
+		AppId:        "mq-service",
+		Body:         data,
+	}
+
+	// Publish the event.
+	if err := chn.Publish(ExchangeEvents, message.RoutingKey(), true, false, msg); err != nil {
+		broker.log.Errorf("Error publishing event: %T: %s", err, err.Error())
+		return broker.HandleError(err)
+	}
+
+	return nil
 }
 
 ///////////////////////

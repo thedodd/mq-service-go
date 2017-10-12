@@ -1,0 +1,33 @@
+version: '2'
+services:
+  _base:
+    build: .
+    command: go test
+    environment:
+      PORT: 4004
+      LOG_LEVEL: info
+      BROKER_CONNECTION_STRING: amqp://admin:adminpassword@rabbitmq.test:5672
+    ports:
+      - 4004
+
+  test:
+    extends:
+      service: _base
+    links:
+      - test.mongodb
+
+  test.with-mounts:
+    extends:
+      service: _base
+    volumes:
+      - ./Gopkg.lock:/go/src/gitlab.com/project-leaf/uploads-service-go/Gopkg.lock
+      - ./Gopkg.toml:/go/src/gitlab.com/project-leaf/uploads-service-go/Gopkg.toml
+      - ./src:/go/src/gitlab.com/project-leaf/uploads-service-go/src
+      - ./main.go:/go/src/gitlab.com/project-leaf/uploads-service-go/main.go
+    links:
+      - test.mongodb
+
+  test.mongodb:
+    image: mongo:3.4.4
+    ports:
+      - 27017

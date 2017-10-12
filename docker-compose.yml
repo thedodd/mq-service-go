@@ -1,0 +1,23 @@
+version: '3'
+services:
+  mq-service:
+    build: .
+    command: sh -c "rerun gitlab.com/project-leaf/mq-service-go"
+    container_name: mq-service
+    ports:
+      - 4004:4004
+    networks:
+      - projectleaf_default
+    volumes:
+      - ./Gopkg.lock:/go/src/gitlab.com/project-leaf/mq-service-go/Gopkg.lock
+      - ./Gopkg.toml:/go/src/gitlab.com/project-leaf/mq-service-go/Gopkg.toml
+      - ./src:/go/src/gitlab.com/project-leaf/mq-service-go/src
+      - ./main.go:/go/src/gitlab.com/project-leaf/mq-service-go/main.go
+    environment:
+      PORT: 4004
+      LOG_LEVEL: info
+      BROKER_CONNECTION_STRING: amqp://admin:adminpassword@rabbitmq:5672
+
+networks:
+  projectleaf_default:
+    external: true

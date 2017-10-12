@@ -68,6 +68,7 @@ func (broker *Broker) EnsureTopology() *core.Error {
 		return broker.handleError(err)
 	}
 
+	broker.log.Info("Broker topology is ready.")
 	return nil
 }
 

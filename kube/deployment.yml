@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: mq-service
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mq-service
+    spec:
+      imagePullSecrets:
+        - name: gitlab-registry-key
+      containers:
+      - name: mq-service
+        image: registry.gitlab.com/project-leaf/mq-service-go:{{ CI_PIPELINE_ID }}
+        ports:
+          - containerPort: 4004
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+          limits:
+            memory: "150Mi"
+            cpu: "150m"
+        livenessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          exec:
+            command:
+            - "/bin/ps"
+            - "1"
+
+        env:
+          - name: PORT
+            value: "4004"
+          - name: LOG_LEVEL
+            value: info
+          - name: BROKER_CONNECTION_STRING
+            value: amqp://admin:adminpassword@rabbitmq:5672

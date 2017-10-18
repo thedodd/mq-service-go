@@ -1,6 +1,6 @@
 FROM golang:1.9.1-alpine
 
-MAINTAINER Anthony Josiah Dodd <Dodd.AnthonyJosiah@gmail.com>
+LABEL maintainer="Anthony Josiah Dodd <Dodd.AnthonyJosiah@gmail.com>"
 
 EXPOSE 4004
 

@@ -9,9 +9,12 @@ It is generated from these files:
 
 It has these top-level messages:
 	SystemEvent
-	EventImageScanUploaded
-	PubImageScanUploadedRequest
-	PubImageScanUploadedResponse
+	EventPhotoScanUploaded
+	EventPhotoScanSampled
+	PubPhotoScanUploadedRequest
+	PubPhotoScanUploadedResponse
+	PubPhotoScanSampledRequest
+	PubPhotoScanSampledResponse
 */
 package mq
 
@@ -40,7 +43,8 @@ const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 type SystemEvent struct {
 	Context *core.Context `protobuf:"bytes,1,opt,name=context" json:"context,omitempty"`
 	// Types that are valid to be assigned to Event:
-	//	*SystemEvent_ImageScanUploaded
+	//	*SystemEvent_PhotoScanUploaded
+	//	*SystemEvent_PhotoScanSampled
 	Event isSystemEvent_Event `protobuf_oneof:"event"`
 }
 
@@ -53,11 +57,15 @@ type isSystemEvent_Event interface {
 	isSystemEvent_Event()
 }
 
-type SystemEvent_ImageScanUploaded struct {
-	ImageScanUploaded *EventImageScanUploaded `protobuf:"bytes,2,opt,name=imageScanUploaded,oneof"`
+type SystemEvent_PhotoScanUploaded struct {
+	PhotoScanUploaded *EventPhotoScanUploaded `protobuf:"bytes,2,opt,name=photoScanUploaded,oneof"`
+}
+type SystemEvent_PhotoScanSampled struct {
+	PhotoScanSampled *EventPhotoScanSampled `protobuf:"bytes,3,opt,name=photoScanSampled,oneof"`
 }
 
-func (*SystemEvent_ImageScanUploaded) isSystemEvent_Event() {}
+func (*SystemEvent_PhotoScanUploaded) isSystemEvent_Event() {}
+func (*SystemEvent_PhotoScanSampled) isSystemEvent_Event()  {}
 
 func (m *SystemEvent) GetEvent() isSystemEvent_Event {
 	if m != nil {
@@ -73,9 +81,16 @@ func (m *SystemEvent) GetContext() *core.Context {
 	return nil
 }
 
-func (m *SystemEvent) GetImageScanUploaded() *EventImageScanUploaded {
-	if x, ok := m.GetEvent().(*SystemEvent_ImageScanUploaded); ok {
-		return x.ImageScanUploaded
+func (m *SystemEvent) GetPhotoScanUploaded() *EventPhotoScanUploaded {
+	if x, ok := m.GetEvent().(*SystemEvent_PhotoScanUploaded); ok {
+		return x.PhotoScanUploaded
+	}
+	return nil
+}
+
+func (m *SystemEvent) GetPhotoScanSampled() *EventPhotoScanSampled {
+	if x, ok := m.GetEvent().(*SystemEvent_PhotoScanSampled); ok {
+		return x.PhotoScanSampled
 	}
 	return nil
 }
@@ -83,7 +98,8 @@ func (m *SystemEvent) GetImageScanUploaded() *EventImageScanUploaded {
 // XXX_OneofFuncs is for the internal use of the proto package.
 func (*SystemEvent) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
 	return _SystemEvent_OneofMarshaler, _SystemEvent_OneofUnmarshaler, _SystemEvent_OneofSizer, []interface{}{
-		(*SystemEvent_ImageScanUploaded)(nil),
+		(*SystemEvent_PhotoScanUploaded)(nil),
+		(*SystemEvent_PhotoScanSampled)(nil),
 	}
 }
 
@@ -91,9 +107,14 @@ func _SystemEvent_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 	m := msg.(*SystemEvent)
 	// event
 	switch x := m.Event.(type) {
-	case *SystemEvent_ImageScanUploaded:
+	case *SystemEvent_PhotoScanUploaded:
 		b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.ImageScanUploaded); err != nil {
+		if err := b.EncodeMessage(x.PhotoScanUploaded); err != nil {
+			return err
+		}
+	case *SystemEvent_PhotoScanSampled:
+		b.EncodeVarint(3<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.PhotoScanSampled); err != nil {
 			return err
 		}
 	case nil:
@@ -106,13 +127,21 @@ func _SystemEvent_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 func _SystemEvent_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
 	m := msg.(*SystemEvent)
 	switch tag {
-	case 2: // event.imageScanUploaded
+	case 2: // event.photoScanUploaded
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
-		msg := new(EventImageScanUploaded)
+		msg := new(EventPhotoScanUploaded)
 		err := b.DecodeMessage(msg)
-		m.Event = &SystemEvent_ImageScanUploaded{msg}
+		m.Event = &SystemEvent_PhotoScanUploaded{msg}
+		return true, err
+	case 3: // event.photoScanSampled
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(EventPhotoScanSampled)
+		err := b.DecodeMessage(msg)
+		m.Event = &SystemEvent_PhotoScanSampled{msg}
 		return true, err
 	default:
 		return false, nil
@@ -123,9 +152,14 @@ func _SystemEvent_OneofSizer(msg proto.Message) (n int) {
 	m := msg.(*SystemEvent)
 	// event
 	switch x := m.Event.(type) {
-	case *SystemEvent_ImageScanUploaded:
-		s := proto.Size(x.ImageScanUploaded)
+	case *SystemEvent_PhotoScanUploaded:
+		s := proto.Size(x.PhotoScanUploaded)
 		n += proto.SizeVarint(2<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *SystemEvent_PhotoScanSampled:
+		s := proto.Size(x.PhotoScanSampled)
+		n += proto.SizeVarint(3<<3 | proto.WireBytes)
 		n += proto.SizeVarint(uint64(s))
 		n += s
 	case nil:
@@ -135,56 +169,112 @@ func _SystemEvent_OneofSizer(msg proto.Message) (n int) {
 	return n
 }
 
-type EventImageScanUploaded struct {
+type EventPhotoScanUploaded struct {
 	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 }
 
-func (m *EventImageScanUploaded) Reset()                    { *m = EventImageScanUploaded{} }
-func (m *EventImageScanUploaded) String() string            { return proto.CompactTextString(m) }
-func (*EventImageScanUploaded) ProtoMessage()               {}
-func (*EventImageScanUploaded) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (m *EventPhotoScanUploaded) Reset()                    { *m = EventPhotoScanUploaded{} }
+func (m *EventPhotoScanUploaded) String() string            { return proto.CompactTextString(m) }
+func (*EventPhotoScanUploaded) ProtoMessage()               {}
+func (*EventPhotoScanUploaded) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
-func (m *EventImageScanUploaded) GetId() string {
+func (m *EventPhotoScanUploaded) GetId() string {
 	if m != nil {
 		return m.Id
 	}
 	return ""
 }
 
-type PubImageScanUploadedRequest struct {
+type EventPhotoScanSampled struct {
+	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
+}
+
+func (m *EventPhotoScanSampled) Reset()                    { *m = EventPhotoScanSampled{} }
+func (m *EventPhotoScanSampled) String() string            { return proto.CompactTextString(m) }
+func (*EventPhotoScanSampled) ProtoMessage()               {}
+func (*EventPhotoScanSampled) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+
+func (m *EventPhotoScanSampled) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+type PubPhotoScanUploadedRequest struct {
 	Context *core.Context `protobuf:"bytes,1,opt,name=context" json:"context,omitempty"`
 	Id      string        `protobuf:"bytes,2,opt,name=id" json:"id,omitempty"`
 }
 
-func (m *PubImageScanUploadedRequest) Reset()                    { *m = PubImageScanUploadedRequest{} }
-func (m *PubImageScanUploadedRequest) String() string            { return proto.CompactTextString(m) }
-func (*PubImageScanUploadedRequest) ProtoMessage()               {}
-func (*PubImageScanUploadedRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+func (m *PubPhotoScanUploadedRequest) Reset()                    { *m = PubPhotoScanUploadedRequest{} }
+func (m *PubPhotoScanUploadedRequest) String() string            { return proto.CompactTextString(m) }
+func (*PubPhotoScanUploadedRequest) ProtoMessage()               {}
+func (*PubPhotoScanUploadedRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
 
-func (m *PubImageScanUploadedRequest) GetContext() *core.Context {
+func (m *PubPhotoScanUploadedRequest) GetContext() *core.Context {
 	if m != nil {
 		return m.Context
 	}
 	return nil
 }
 
-func (m *PubImageScanUploadedRequest) GetId() string {
+func (m *PubPhotoScanUploadedRequest) GetId() string {
 	if m != nil {
 		return m.Id
 	}
 	return ""
 }
 
-type PubImageScanUploadedResponse struct {
+type PubPhotoScanUploadedResponse struct {
 	Error *core.Error `protobuf:"bytes,1,opt,name=error" json:"error,omitempty"`
 }
 
-func (m *PubImageScanUploadedResponse) Reset()                    { *m = PubImageScanUploadedResponse{} }
-func (m *PubImageScanUploadedResponse) String() string            { return proto.CompactTextString(m) }
-func (*PubImageScanUploadedResponse) ProtoMessage()               {}
-func (*PubImageScanUploadedResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+func (m *PubPhotoScanUploadedResponse) Reset()                    { *m = PubPhotoScanUploadedResponse{} }
+func (m *PubPhotoScanUploadedResponse) String() string            { return proto.CompactTextString(m) }
+func (*PubPhotoScanUploadedResponse) ProtoMessage()               {}
+func (*PubPhotoScanUploadedResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
 
-func (m *PubImageScanUploadedResponse) GetError() *core.Error {
+func (m *PubPhotoScanUploadedResponse) GetError() *core.Error {
+	if m != nil {
+		return m.Error
+	}
+	return nil
+}
+
+type PubPhotoScanSampledRequest struct {
+	Context *core.Context `protobuf:"bytes,1,opt,name=context" json:"context,omitempty"`
+	Id      string        `protobuf:"bytes,2,opt,name=id" json:"id,omitempty"`
+}
+
+func (m *PubPhotoScanSampledRequest) Reset()                    { *m = PubPhotoScanSampledRequest{} }
+func (m *PubPhotoScanSampledRequest) String() string            { return proto.CompactTextString(m) }
+func (*PubPhotoScanSampledRequest) ProtoMessage()               {}
+func (*PubPhotoScanSampledRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+
+func (m *PubPhotoScanSampledRequest) GetContext() *core.Context {
+	if m != nil {
+		return m.Context
+	}
+	return nil
+}
+
+func (m *PubPhotoScanSampledRequest) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+type PubPhotoScanSampledResponse struct {
+	Error *core.Error `protobuf:"bytes,1,opt,name=error" json:"error,omitempty"`
+}
+
+func (m *PubPhotoScanSampledResponse) Reset()                    { *m = PubPhotoScanSampledResponse{} }
+func (m *PubPhotoScanSampledResponse) String() string            { return proto.CompactTextString(m) }
+func (*PubPhotoScanSampledResponse) ProtoMessage()               {}
+func (*PubPhotoScanSampledResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+
+func (m *PubPhotoScanSampledResponse) GetError() *core.Error {
 	if m != nil {
 		return m.Error
 	}
@@ -193,9 +283,12 @@ func (m *PubImageScanUploadedResponse) GetError() *core.Error {
 
 func init() {
 	proto.RegisterType((*SystemEvent)(nil), "mq.SystemEvent")
-	proto.RegisterType((*EventImageScanUploaded)(nil), "mq.EventImageScanUploaded")
-	proto.RegisterType((*PubImageScanUploadedRequest)(nil), "mq.PubImageScanUploadedRequest")
-	proto.RegisterType((*PubImageScanUploadedResponse)(nil), "mq.PubImageScanUploadedResponse")
+	proto.RegisterType((*EventPhotoScanUploaded)(nil), "mq.EventPhotoScanUploaded")
+	proto.RegisterType((*EventPhotoScanSampled)(nil), "mq.EventPhotoScanSampled")
+	proto.RegisterType((*PubPhotoScanUploadedRequest)(nil), "mq.PubPhotoScanUploadedRequest")
+	proto.RegisterType((*PubPhotoScanUploadedResponse)(nil), "mq.PubPhotoScanUploadedResponse")
+	proto.RegisterType((*PubPhotoScanSampledRequest)(nil), "mq.PubPhotoScanSampledRequest")
+	proto.RegisterType((*PubPhotoScanSampledResponse)(nil), "mq.PubPhotoScanSampledResponse")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -210,7 +303,9 @@ const _ = grpc.SupportPackageIsVersion4
 
 type InternalMQServiceClient interface {
 	// Publish an event indicating that the specified scan image was successfully uploaded.
-	PubImageScanUploaded(ctx context.Context, in *PubImageScanUploadedRequest, opts ...grpc.CallOption) (*PubImageScanUploadedResponse, error)
+	PubPhotoScanUploaded(ctx context.Context, in *PubPhotoScanUploadedRequest, opts ...grpc.CallOption) (*PubPhotoScanUploadedResponse, error)
+	// Publish an event indicating that the specified scan image was successfully sampled.
+	PubPhotoScanSampled(ctx context.Context, in *PubPhotoScanSampledRequest, opts ...grpc.CallOption) (*PubPhotoScanSampledResponse, error)
 }
 
 type internalMQServiceClient struct {
@@ -221,9 +316,18 @@ func NewInternalMQServiceClient(cc *grpc.ClientConn) InternalMQServiceClient {
 	return &internalMQServiceClient{cc}
 }
 
-func (c *internalMQServiceClient) PubImageScanUploaded(ctx context.Context, in *PubImageScanUploadedRequest, opts ...grpc.CallOption) (*PubImageScanUploadedResponse, error) {
-	out := new(PubImageScanUploadedResponse)
-	err := grpc.Invoke(ctx, "/mq.InternalMQService/PubImageScanUploaded", in, out, c.cc, opts...)
+func (c *internalMQServiceClient) PubPhotoScanUploaded(ctx context.Context, in *PubPhotoScanUploadedRequest, opts ...grpc.CallOption) (*PubPhotoScanUploadedResponse, error) {
+	out := new(PubPhotoScanUploadedResponse)
+	err := grpc.Invoke(ctx, "/mq.InternalMQService/PubPhotoScanUploaded", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *internalMQServiceClient) PubPhotoScanSampled(ctx context.Context, in *PubPhotoScanSampledRequest, opts ...grpc.CallOption) (*PubPhotoScanSampledResponse, error) {
+	out := new(PubPhotoScanSampledResponse)
+	err := grpc.Invoke(ctx, "/mq.InternalMQService/PubPhotoScanSampled", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -234,27 +338,47 @@ func (c *internalMQServiceClient) PubImageScanUploaded(ctx context.Context, in *
 
 type InternalMQServiceServer interface {
 	// Publish an event indicating that the specified scan image was successfully uploaded.
-	PubImageScanUploaded(context.Context, *PubImageScanUploadedRequest) (*PubImageScanUploadedResponse, error)
+	PubPhotoScanUploaded(context.Context, *PubPhotoScanUploadedRequest) (*PubPhotoScanUploadedResponse, error)
+	// Publish an event indicating that the specified scan image was successfully sampled.
+	PubPhotoScanSampled(context.Context, *PubPhotoScanSampledRequest) (*PubPhotoScanSampledResponse, error)
 }
 
 func RegisterInternalMQServiceServer(s *grpc.Server, srv InternalMQServiceServer) {
 	s.RegisterService(&_InternalMQService_serviceDesc, srv)
 }
 
-func _InternalMQService_PubImageScanUploaded_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PubImageScanUploadedRequest)
+func _InternalMQService_PubPhotoScanUploaded_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PubPhotoScanUploadedRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InternalMQServiceServer).PubImageScanUploaded(ctx, in)
+		return srv.(InternalMQServiceServer).PubPhotoScanUploaded(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/mq.InternalMQService/PubImageScanUploaded",
+		FullMethod: "/mq.InternalMQService/PubPhotoScanUploaded",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InternalMQServiceServer).PubImageScanUploaded(ctx, req.(*PubImageScanUploadedRequest))
+		return srv.(InternalMQServiceServer).PubPhotoScanUploaded(ctx, req.(*PubPhotoScanUploadedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InternalMQService_PubPhotoScanSampled_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PubPhotoScanSampledRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InternalMQServiceServer).PubPhotoScanSampled(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mq.InternalMQService/PubPhotoScanSampled",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InternalMQServiceServer).PubPhotoScanSampled(ctx, req.(*PubPhotoScanSampledRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -264,8 +388,12 @@ var _InternalMQService_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*InternalMQServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "PubImageScanUploaded",
-			Handler:    _InternalMQService_PubImageScanUploaded_Handler,
+			MethodName: "PubPhotoScanUploaded",
+			Handler:    _InternalMQService_PubPhotoScanUploaded_Handler,
+		},
+		{
+			MethodName: "PubPhotoScanSampled",
+			Handler:    _InternalMQService_PubPhotoScanSampled_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -275,22 +403,26 @@ var _InternalMQService_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("mq-service.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 260 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x91, 0xcf, 0x4a, 0x03, 0x31,
-	0x10, 0x87, 0xdd, 0x40, 0x2d, 0xce, 0xa2, 0xd8, 0x20, 0x52, 0x56, 0xc1, 0xba, 0x17, 0x7b, 0x71,
-	0x0f, 0xf5, 0x09, 0x54, 0x0a, 0x56, 0x10, 0x34, 0x8b, 0x82, 0xc7, 0xed, 0x66, 0x90, 0x40, 0x93,
-	0x6c, 0xfe, 0xb4, 0xe8, 0x33, 0xf8, 0xd2, 0xb2, 0x49, 0xf5, 0x60, 0x57, 0xa1, 0xc7, 0xcc, 0x7c,
-	0xbf, 0x8f, 0x99, 0x09, 0x1c, 0x4a, 0x73, 0xe9, 0xd0, 0xae, 0x44, 0x8d, 0x45, 0x63, 0xb5, 0xd7,
-	0x94, 0x48, 0x93, 0x41, 0xad, 0xed, 0xfa, 0x9d, 0x7f, 0x26, 0x90, 0x96, 0x1f, 0xce, 0xa3, 0x9c,
-	0xae, 0x50, 0x79, 0x7a, 0x01, 0xfd, 0x5a, 0x2b, 0x8f, 0xef, 0x7e, 0x98, 0x8c, 0x92, 0x71, 0x3a,
-	0xd9, 0x2f, 0x02, 0x7d, 0x1b, 0x8b, 0xec, 0xbb, 0x4b, 0xef, 0x61, 0x20, 0x64, 0xf5, 0x86, 0x65,
-	0x5d, 0xa9, 0xe7, 0x66, 0xa1, 0x2b, 0x8e, 0x7c, 0x48, 0x42, 0x24, 0x2b, 0xa4, 0x29, 0x82, 0x6e,
-	0xf6, 0x9b, 0xb8, 0xdb, 0x61, 0x9b, 0xb1, 0x9b, 0x3e, 0xf4, 0xb0, 0xc5, 0xf3, 0x31, 0x1c, 0x77,
-	0xe7, 0xe8, 0x01, 0x10, 0xc1, 0xc3, 0x48, 0x7b, 0x8c, 0x08, 0x9e, 0xbf, 0xc0, 0xc9, 0xe3, 0x72,
-	0xbe, 0xc1, 0x31, 0x34, 0x4b, 0x74, 0x5b, 0xac, 0x11, 0xbd, 0xe4, 0xc7, 0x7b, 0x0d, 0xa7, 0xdd,
-	0x5e, 0xd7, 0x68, 0xe5, 0x90, 0x9e, 0x43, 0x0f, 0xad, 0xd5, 0x76, 0xad, 0x4d, 0xa3, 0x76, 0xda,
-	0x96, 0x58, 0xec, 0x4c, 0x14, 0x0c, 0x66, 0xca, 0xa3, 0x55, 0xd5, 0xe2, 0xe1, 0xa9, 0x8c, 0xd7,
-	0xa7, 0xaf, 0x70, 0xd4, 0xe5, 0xa5, 0x67, 0xed, 0xad, 0xfe, 0xd9, 0x24, 0x1b, 0xfd, 0x0d, 0xc4,
-	0x91, 0xe6, 0xbb, 0xe1, 0x27, 0xaf, 0xbe, 0x02, 0x00, 0x00, 0xff, 0xff, 0xad, 0x27, 0xc8, 0x30,
-	0xed, 0x01, 0x00, 0x00,
+	// 330 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x93, 0xcd, 0x4e, 0xc2, 0x40,
+	0x14, 0x85, 0x69, 0x0d, 0x12, 0x2f, 0xd1, 0xc0, 0xf8, 0x13, 0xac, 0x46, 0xb0, 0x1b, 0xd8, 0xd8,
+	0x05, 0xbe, 0x80, 0x3f, 0x21, 0xa2, 0x89, 0x09, 0x4e, 0x03, 0x89, 0xcb, 0xd2, 0xde, 0x44, 0x12,
+	0x3a, 0xd3, 0x4e, 0x07, 0xa2, 0x2f, 0xe8, 0x13, 0xf8, 0x40, 0xa6, 0x33, 0xb5, 0x11, 0x5a, 0x8c,
+	0xc6, 0x65, 0xef, 0x3d, 0xe7, 0xcb, 0x39, 0xb7, 0x2d, 0x34, 0xc2, 0xf8, 0x22, 0x41, 0xb1, 0x9c,
+	0xf9, 0xe8, 0x44, 0x82, 0x4b, 0x4e, 0xcc, 0x30, 0xb6, 0xc0, 0xe7, 0x22, 0x7b, 0xb6, 0x3f, 0x0c,
+	0xa8, 0xbb, 0x6f, 0x89, 0xc4, 0x70, 0xb0, 0x44, 0x26, 0x49, 0x17, 0x6a, 0x3e, 0x67, 0x12, 0x5f,
+	0x65, 0xcb, 0xe8, 0x18, 0xbd, 0x7a, 0x7f, 0xd7, 0x51, 0xea, 0x5b, 0x3d, 0xa4, 0x5f, 0x5b, 0xf2,
+	0x00, 0xcd, 0xe8, 0x85, 0x4b, 0xee, 0xfa, 0x1e, 0x1b, 0x47, 0x73, 0xee, 0x05, 0x18, 0xb4, 0x4c,
+	0x65, 0xb1, 0x9c, 0x30, 0x76, 0x14, 0x6e, 0xb4, 0xae, 0x18, 0x56, 0x68, 0xd1, 0x46, 0xee, 0xa0,
+	0x91, 0x0f, 0x5d, 0x2f, 0x8c, 0xe6, 0x18, 0xb4, 0xb6, 0x14, 0xea, 0xb8, 0x88, 0xca, 0x04, 0xc3,
+	0x0a, 0x2d, 0x98, 0x6e, 0x6a, 0x50, 0xc5, 0x54, 0x6c, 0xf7, 0xe0, 0xa8, 0x3c, 0x00, 0xd9, 0x03,
+	0x73, 0x16, 0xa8, 0x6e, 0x3b, 0xd4, 0x9c, 0x05, 0x76, 0x17, 0x0e, 0x4b, 0xf9, 0x05, 0xe1, 0x04,
+	0x4e, 0x46, 0x8b, 0x69, 0x01, 0x48, 0x31, 0x5e, 0x60, 0xf2, 0x87, 0xc3, 0x69, 0xae, 0x99, 0x73,
+	0xaf, 0xe1, 0xb4, 0x9c, 0x9b, 0x44, 0x9c, 0x25, 0x48, 0xce, 0xa1, 0x8a, 0x42, 0x70, 0x91, 0x61,
+	0xeb, 0x1a, 0x3b, 0x48, 0x47, 0x54, 0x6f, 0xec, 0x31, 0x58, 0xdf, 0x11, 0x59, 0x83, 0x7f, 0x27,
+	0xbb, 0x5a, 0x6d, 0x9c, 0x63, 0x7f, 0x1d, 0xac, 0xff, 0x6e, 0x40, 0xf3, 0x9e, 0x49, 0x14, 0xcc,
+	0x9b, 0x3f, 0x3e, 0xb9, 0xfa, 0x4b, 0x24, 0xcf, 0x70, 0x50, 0xd6, 0x98, 0xb4, 0xd3, 0x97, 0xfd,
+	0xc3, 0x8d, 0xad, 0xce, 0x66, 0x41, 0x96, 0x69, 0x02, 0xfb, 0x25, 0x91, 0xc9, 0xd9, 0xba, 0x71,
+	0xf5, 0x44, 0x56, 0x7b, 0xe3, 0x5e, 0x73, 0xa7, 0xdb, 0xea, 0x6f, 0xb9, 0xfc, 0x0c, 0x00, 0x00,
+	0xff, 0xff, 0x91, 0x2b, 0xf6, 0x7b, 0x51, 0x03, 0x00, 0x00,
 }

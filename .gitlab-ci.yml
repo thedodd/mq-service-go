@@ -1,0 +1,66 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  DC_GROUP: ${CI_PIPELINE_ID}mqservice
+  DC_GROUP_BUILD_NAME: ${CI_PIPELINE_ID}mqservice_test
+  DC_YML: docker-compose.test.yml
+  IMAGE_LOCAL_TAG: ${CI_REGISTRY_IMAGE}:local
+  IMAGE_RELEASE_TAG: ${CI_REGISTRY_IMAGE}:${CI_PIPELINE_ID}
+
+before_script:
+  - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+
+build.feature-branch:
+  stage: build
+  except:
+    - develop
+    - staging
+    - master
+  script:
+    # - docker-compose -p ${DC_GROUP} -f ${DC_YML} up -d test.rabbitmq
+    - docker-compose -p ${DC_GROUP} -f ${DC_YML} build test
+    # TODO: add tests.
+
+    # Cleanup.
+    - docker-compose -p ${DC_GROUP} -f ${DC_YML} down --rmi local --volumes --remove-orphans
+    - docker network prune -f
+
+###########
+# DEVELOP #
+build.develop:
+  stage: build
+  only:
+    - develop
+  script:
+    # - docker-compose -p ${DC_GROUP} -f ${DC_YML} up -d test.rabbitmq
+    # - docker-compose -p ${DC_GROUP} -f ${DC_YML} build test
+
+    # Build release version. Push to registry. `DC_GROUP_BUILD_NAME` is generated from docker-compose automatically.
+    # The environment variable is created to match the expected tag name.
+    - docker build -t ${IMAGE_RELEASE_TAG} .
+    - docker push ${IMAGE_RELEASE_TAG}
+
+    # Update the container local tag as well.
+    - docker tag ${IMAGE_RELEASE_TAG} ${IMAGE_LOCAL_TAG}
+    - docker push ${IMAGE_LOCAL_TAG}
+
+    # Cleanup.
+    - docker-compose -p ${DC_GROUP} -f ${DC_YML} down --rmi local --volumes --remove-orphans
+    - docker network prune -f
+
+deploy.develop:
+  stage: deploy
+  only:
+    - develop
+  script:
+    - gcloud auth activate-service-account --key-file ./kube/ci-dev.json
+    - gcloud config set project projectleaf-development
+    - gcloud config set compute/zone us-central1-c
+    - gcloud config set container/cluster development-cluster
+    - gcloud container clusters get-credentials development-cluster
+    - export GOOGLE_APPLICATION_CREDENTIALS=kube/ci-dev.json
+    - kubectl apply -f ./kube/service.yml --record
+    - render_j2 ./kube/deployment.yml | kubectl apply -f - --record
+    - kubectl rollout status -w deployment mq-service

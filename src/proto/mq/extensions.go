@@ -20,6 +20,11 @@ type SystemEventMessage interface {
 // valid `SystemEvent` types.
 
 // RoutingKey is this message's routing key.
-func (msg *SystemEvent_ImageScanUploaded) RoutingKey() string {
-	return "events.scan.image.uploaded"
+func (msg *SystemEvent_PhotoScanUploaded) RoutingKey() string {
+	return "events.scan.photo.uploaded"
+}
+
+// RoutingKey is this message's routing key.
+func (msg *SystemEvent_PhotoScanSampled) RoutingKey() string {
+	return "events.scan.photo.sampled"
 }

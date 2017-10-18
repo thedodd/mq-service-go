@@ -1,0 +1,12 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: mq-service
+spec:
+  selector:
+    app: mq-service
+  ports:
+  - protocol: TCP
+    port: 4004
+    targetPort: 4004

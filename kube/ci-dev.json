@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "projectleaf-development",
+  "private_key_id": "ea600e87e4a11e13bcf1be95666ef416ba825861",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCfQYlwldyZcX34\nOAtiwGDYLiHdgHh+KGJpE9w1TRkYZJNnP5FhWYndNaePA70G1XylZpMFCI7IQkeI\nTA12GQ5fBQhceQR5O3/0cGKOZ2xYy599h12vPfFTS5KyvVSdqkLtVuuhxGFMnJQ7\nEHmF6z8Q5jivzHKPb4eC6rNYnjE9X7tWq/mpRRFuOO8CBvsy3krriP1oZT1HWOuU\nGDeOVd8qnB0GLXlE4r1RcjNz4loWw3XYkSRmrRO95bUF4xLGqvVKnkyA7NOJqdkx\nwdAHaCShOnPTiV7sP3mKtzAXPEpXobQhi+7+qvD9MfbwoSbY9u92dNkxfe322DI2\nXh8ogk0RAgMBAAECggEAPK9PfQxOFFZv5v8ML6QZAyeJFguXXpNq9JlxxwnK70Wb\n+bL6ZfslkpqYb+G/zPPa3Hgau8dICT1gXqqEUqU3mbOkPQCMWNn4Zx/QHm2AltF4\nw++qHlXfOJtKmjuVG8M+X4xIm8rmPLhJr7wWYpaC4KCppyuj185q99MRZkpZfwX6\nmcvopt3fGS6FAdp/sYexTX3qM3tUtFhym0ijTUcpk4Hnqna5gPRZ7j4EoFB0AvaA\nrmf/tjYURnIZNHW7/bYH+maNRH7VNxQaWv6r3EJCDYwULCFYHCKHLdz3+KSgDUl6\nhP6RgR8LecQR7+mJ8/upKyx0LNRr20JNIgzkkyz0lQKBgQDUmVAYx+rj3RJuiKNG\nAvSONboIQ6tOHLE1iHhh8TPkiMt0HSTieAUgYgkTNyat/Pa0FtdG2ZBR+tpnyxRR\nBrPrdsYL/8vCztjuKDqW7loiEBp8w40xXmTAG0nTzaasfvA1G7qpUArFGNrpyw1m\nV/ObbvUv51IiwE5Bc1JCjX/zlwKBgQC/xHUpyceZKWSZ1N1nIp0KVFQpxLWV/FGX\npLtaQNZrfVD7Hr7C3Nac23ur5PkNZlGdSMwkUozTrOXji7MQZtoqEA3ZFLPaeMPi\nciE/Mq5ihNe9KYkjUZJRXMTLKCELZorPhQBpaQkoJFo2M9d+D7jc5z4PpM4PrEfw\np+F3lzs5lwKBgAiycOVioEhMDen5qvw9OLXsmryl0Ac1A0bWW15eWKobsn8AhjbB\nhCwr9oUTt4BcndcGLC5Yzh+cbHzcgOtDo+6ZAEcTYsmIXrV3bdYo0AUetYavFUKU\nwvhc5WtFuXDLDJaPmNY+UQJ5HtN7nAO4y11rb5pTEzgat9jTl+TjFv3nAoGAVgV0\nYRhodqYAwJih8F+wfi+xyUK6CduzZgi5GhU3meQO7XavL44MnzQ9V7BQn9gkCB/d\novV8wn8uaFIEMvlQJ8onzBbjTr8Zb3yuuUCsxPi+JdZ58+PldKXeiRspJ4oJ/mi0\n9JPvTZhw9xtuMNgwnrcEOdQ9sv4fDy7fjtvB72UCgYAxHICXLJDBA2Oucs+vAMN+\nqeOBXjxO+dtR91DuX/+bJG50sITHjxK7Z78GQlV2E+IEmYpQcPjFcCft28BzFtSq\neahrCOHiKl05zWoOBBBwp1q2UGZbZhP7v6eL6ElzDM+l9kvjU4kCEfmSGG18R6QQ\nS9dTywB85itBJh2DR7wgCg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "ci-cd-276@projectleaf-development.iam.gserviceaccount.com",
+  "client_id": "106296443333419790169",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ci-cd-276%40projectleaf-development.iam.gserviceaccount.com"
+}

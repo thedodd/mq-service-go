@@ -18,8 +18,10 @@ const (
 	// ExchangeEvents is the exchange where event messages are published.
 	ExchangeEvents = "events"
 
-	queueEventsScanImageUploaded    = "events.scan.image.uploaded"
-	queueEventsScanImageUploadedKey = "events.scan.image.uploaded"
+	queueEventsScanPhotoSampled     = "events.scan.photo.sampled"
+	queueEventsScanPhotoSampledKey  = "events.scan.photo.sampled"
+	queueEventsScanPhotoUploaded    = "events.scan.photo.uploaded"
+	queueEventsScanPhotoUploadedKey = "events.scan.photo.uploaded"
 )
 
 var (
@@ -60,11 +62,19 @@ func (broker *Broker) EnsureTopology() *core.Error {
 		return broker.handleError(err)
 	}
 
-	// Ensure needed queues.
-	if _, err := chn.QueueDeclare(queueEventsScanImageUploaded, true, false, false, false, amqp.Table{"x-message-ttl": ttlSLA}); err != nil {
+	// Ensure PhotoScanUploaded queue.
+	if _, err := chn.QueueDeclare(queueEventsScanPhotoUploaded, true, false, false, false, amqp.Table{"x-message-ttl": ttlSLA}); err != nil {
 		return broker.handleError(err)
 	}
-	if err := chn.QueueBind(queueEventsScanImageUploaded, queueEventsScanImageUploadedKey, ExchangeEvents, false, nil); err != nil {
+	if err := chn.QueueBind(queueEventsScanPhotoUploaded, queueEventsScanPhotoUploadedKey, ExchangeEvents, false, nil); err != nil {
+		return broker.handleError(err)
+	}
+
+	// Ensure PhotoScanSampled queue.
+	if _, err := chn.QueueDeclare(queueEventsScanPhotoSampled, true, false, false, false, amqp.Table{"x-message-ttl": ttlSLA}); err != nil {
+		return broker.handleError(err)
+	}
+	if err := chn.QueueBind(queueEventsScanPhotoSampled, queueEventsScanPhotoSampledKey, ExchangeEvents, false, nil); err != nil {
 		return broker.handleError(err)
 	}
 

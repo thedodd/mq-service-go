@@ -38,4 +38,4 @@ spec:
           - name: LOG_LEVEL
             value: info
           - name: BROKER_CONNECTION_STRING
-            value: amqp://admin:adminpassword@rabbitmq:5672
+            value: amqp://guest:guest@rabbitmq:5672

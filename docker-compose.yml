@@ -16,7 +16,7 @@ services:
     environment:
       PORT: 4004
       LOG_LEVEL: info
-      BROKER_CONNECTION_STRING: amqp://admin:adminpassword@rabbitmq:5672
+      BROKER_CONNECTION_STRING: amqp://admin:adminpassword@rabbitmq:5672/main
 
 networks:
   projectleaf_default:

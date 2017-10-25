@@ -36,6 +36,6 @@ spec:
           - name: PORT
             value: "4004"
           - name: LOG_LEVEL
-            value: info
+            value: debug
           - name: BROKER_CONNECTION_STRING
             value: amqp://mq-service:cLqyXLwqQ3Lq2h5h7Shz@rabbitmq:5672/main

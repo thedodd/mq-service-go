@@ -15,7 +15,7 @@ services:
       - ./main.go:/go/src/gitlab.com/project-leaf/mq-service-go/main.go
     environment:
       PORT: 4004
-      LOG_LEVEL: info
+      LOG_LEVEL: debug
       BROKER_CONNECTION_STRING: amqp://admin:adminpassword@rabbitmq:5672/main
 
 networks:

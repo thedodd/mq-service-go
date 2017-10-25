@@ -21,10 +21,10 @@ type SystemEventMessage interface {
 
 // RoutingKey is this message's routing key.
 func (msg *SystemEvent_PhotoScanUploaded) RoutingKey() string {
-	return "events.scan.photo.uploaded"
+	return "events.photoscan.uploaded"
 }
 
 // RoutingKey is this message's routing key.
 func (msg *SystemEvent_PhotoScanSampled) RoutingKey() string {
-	return "events.scan.photo.sampled"
+	return "events.photoscan.sampled"
 }
